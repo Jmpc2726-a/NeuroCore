@@ -50,7 +50,7 @@ class ModelResponse(BaseModel):
     finish_reason: str = "stop"  # "stop" | "tool_calls" | "length" | "error"
     provider: str
     model: str
-    usage: Dict[str, int] = Field(default_factory=lambda: {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
+    usage: Dict[str, Any] = Field(default_factory=lambda: {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
     fallback_occurred: bool = False
     fallback_trace: List[str] = Field(default_factory=list)
 

@@ -165,6 +165,8 @@ async def sync_chat(req: ChatRequest):
         api_key=req.api_key,
     )
     dump = res.model_dump()
+    if res.fallback_occurred:
+        print(f"Fallback Trace: {res.fallback_trace}")
     dump["provider_used"] = req.provider or "local"
     if "response" not in dump and "content" in dump:
         dump["response"] = dump["content"]

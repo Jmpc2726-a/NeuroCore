@@ -25,7 +25,7 @@ class ChatResponse(BaseModel):
     model_used: str
     tool_calls: List[Dict[str, Any]] = []
     finish_reason: str = "stop"
-    usage: Dict[str, int] = Field(default_factory=lambda: {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
+    usage: Dict[str, Any] = Field(default_factory=lambda: {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0})
     execution_time_ms: int = 0
     fallback_occurred: bool = False
     fallback_trace: List[str] = []

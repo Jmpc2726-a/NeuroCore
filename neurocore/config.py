@@ -32,7 +32,7 @@ class Config:
         self.default_model_gemini: str = "gemini-2.5-flash"
         self.default_model_openai: str = "gpt-4o"
         self.default_model_anthropic: str = "claude-3-5-sonnet"
-        self.default_model_openrouter: str = "qwen/qwen-2.5-coder-32b-instruct:free"
+        self.default_model_openrouter: str = "nvidia/nemotron-3-ultra-550b-a55b:free"
         self.default_model_local: str = "simulated-local-v1"
 
     @property

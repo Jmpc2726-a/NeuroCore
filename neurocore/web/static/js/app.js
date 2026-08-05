@@ -378,7 +378,7 @@ class ChatClient {
                     'gemini': 'gemini-2.5-flash',
                     'openai': 'gpt-4o',
                     'anthropic': 'claude-3-5-sonnet',
-                    'openrouter': 'qwen/qwen-2.5-coder-32b-instruct:free'
+                    'openrouter': 'nvidia/nemotron-3-ultra-550b-a55b:free'
                 };
                 selectModel.value = modelMap[prov] || 'offline-simulated';
             });
@@ -483,7 +483,10 @@ class ChatClient {
     renderAssistantResponse(data) {
         if (!this.container) return;
 
-        const rawText = data.response || data.content || data.message || 'Tarefa processada.';
+        let rawText = data.response || data.content || data.message || 'Tarefa processada.';
+        if (data.fallback_occurred && data.fallback_trace && data.fallback_trace.length > 0) {
+            rawText += '\n\n**Aviso de Fallback:**\n' + data.fallback_trace.map(t => `- ${t}`).join('\n');
+        }
         const providerName = (data.provider_used || state.provider).toUpperCase();
         const formattedHtml = this.formatMarkdown(rawText);
 
