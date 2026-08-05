@@ -10,30 +10,32 @@
 
 :root {
     /* Palette Tokens - Claude Style Warm Dark Mode */
-    --bg-main: #1B1917;
-    --bg-surface: #242220;
-    --bg-surface-hover: #2E2B28;
-    --bg-card: #282523;
-    --bg-input: #1E1C1A;
+    --bg-main: #F4FBF4;
+    --bg-surface: #FFFFFF;
+    --bg-surface-hover: #ECFDF5;
+    --bg-card: #FFFFFF;
+    --bg-input: #F8FAFC;
 
-    --text-primary: #EAE7E1;
-    --text-secondary: #A8A29E;
-    --text-muted: #78716C;
+    --text-primary: #064E3B;
+    --text-secondary: #047857;
+    --text-muted: #6EE7B7;
 
-    --border-color: #2E2B28;
-    --border-hover: #44403C;
+    --border-color: #D1FAE5;
+    --border-hover: #A7F3D0;
 
     /* Anthropic Terracotta / Amber Accent */
-    --accent-terracotta: #DA7756;
-    --accent-terracotta-hover: #C86646;
+    --accent-terracotta: #10B981;
+    --accent-terracotta-hover: #059669;
     --accent-amber: #F59E0B;
     --accent-emerald: #10B981;
+    --plant-green-light: #A7F3D0;
+    --plant-green-dark: #059669;
     --accent-rose: #EF4444;
 
     /* Shadows & Radii */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 2px rgba(4, 120, 87, 0.05);
+    --shadow-md: 0 4px 12px rgba(4, 120, 87, 0.1);
+    --shadow-lg: 0 8px 24px rgba(4, 120, 87, 0.15);
 
     --radius-sm: 6px;
     --radius-md: 10px;
@@ -880,4 +882,21 @@ body {
 @keyframes typingBounce {
     0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
     40% { transform: scale(1); opacity: 1; }
+}
+
+/* Plant SVGs */
+.plant-decoration {
+    position: absolute;
+    width: max(15vw, 150px);
+    height: max(15vw, 150px);
+    z-index: 0;
+    pointer-events: none;
+}
+.plant-decoration.top-left {
+    top: 0;
+    left: 0;
+}
+.plant-decoration.top-right {
+    top: 0;
+    right: 0;
 }

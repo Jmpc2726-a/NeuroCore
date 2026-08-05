@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroCore — Assistente de Código AI (Claude Style)</title>
+    <title>NeuroCore — Assistente de Código AI (Nature Theme)</title>
     <!-- Claude Style Clean Stylesheet -->
     <link rel="stylesheet" href="/static/css/style.css">
     <!-- Google Fonts: Inter & JetBrains Mono -->
@@ -12,11 +12,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Top Corner Plant SVG Decorations -->
+    <svg class="plant-decoration top-left" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M0,0 L100,0 Q50,50 0,100 Z" fill="var(--plant-green-light)" opacity="0.3"/>
+        <path d="M0,0 L70,0 Q30,70 0,70 Z" fill="var(--plant-green-dark)" opacity="0.4"/>
+    </svg>
+    <svg class="plant-decoration top-right" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="M0,0 L100,0 L100,100 Q50,50 0,0 Z" fill="var(--plant-green-light)" opacity="0.3"/>
+        <path d="M100,0 L30,0 Q70,70 100,70 Z" fill="var(--plant-green-dark)" opacity="0.4"/>
+    </svg>
     <!-- 1. CLAUDE.AI STYLE MINIMALIST HEADER -->
     <header class="app-header">
         <div class="header-left">
             <div class="brand-logo">
-                <span class="sparkle-icon">✸</span>
+                <span class="sparkle-icon">⚲</span>
                 <span class="brand-title">NeuroCore</span>
                 <span class="brand-badge">Workspace AI</span>
             </div>
@@ -24,9 +33,9 @@
 
         <div class="header-center">
             <nav class="view-tabs">
-                <button id="tab-btn-chat" class="tab-btn active">💬 Conversa</button>
-                <button id="tab-btn-diff" class="tab-btn">🔍 Diffs de Código</button>
-                <button id="tab-btn-tasks" class="tab-btn">📋 Tarefas</button>
+                <button id="tab-btn-chat" class="tab-btn active">Conversa</button>
+                <button id="tab-btn-diff" class="tab-btn">Diffs de Código</button>
+                <button id="tab-btn-tasks" class="tab-btn">Tarefas</button>
             </nav>
         </div>
 
@@ -35,12 +44,12 @@
             <button id="btn-open-connection" class="header-pill-btn">
                 <span class="dot-online"></span>
                 <span id="active-provider-label">Conexão: Local Offline</span>
-                <span class="gear-icon">⚙️</span>
+                <span class="gear-icon">⛭</span>
             </button>
 
             <!-- Workspace Indicator -->
             <div class="workspace-pill" title="Repositório de Trabalho Ativo">
-                📁 <span>/home/Andrade/neurocore-agent</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> <span>/home/Andrade/neurocore-agent</span>
             </div>
 
             <!-- New Chat Button -->
@@ -54,7 +63,7 @@
     <div id="connection-modal" class="modal-backdrop hidden">
         <div class="modal-panel">
             <div class="modal-header">
-                <h3>⚙️ Configuração de Conexão & API Key</h3>
+                <h3>⛭ Configuração de Conexão & API Key</h3>
                 <button id="btn-close-modal" class="btn-close-modal">✕</button>
             </div>
             <div class="modal-body">
@@ -77,7 +86,7 @@
                     <label class="form-label">API Key do Provedor (Opcional no modo Local)</label>
                     <input type="password" id="modal-api-key-input" class="clean-input" placeholder="Cole sua API Key aqui (ex: AIza... / sk-... / sk-ant-...)">
                     <span class="input-hint">
-                        🔒 Sua chave fica salva apenas no navegador e é enviada com segurança para o servidor local do seu workspace.
+                        Sua chave fica salva apenas no navegador e é enviada com segurança para o servidor local do seu workspace.
                     </span>
                 </div>
 
@@ -110,7 +119,7 @@
                 
                 <!-- Initial Clean Welcome Screen -->
                 <div id="welcome-card" class="welcome-card">
-                    <div class="welcome-icon">✸</div>
+                    <div class="welcome-icon">⚲</div>
                     <h2>Como posso ajudar no seu código hoje?</h2>
                     <p class="welcome-subtitle">
                         NeuroCore Code Agent integrado diretamente ao seu repositório local.
@@ -118,16 +127,16 @@
 
                     <div class="prompt-suggestions">
                         <button class="prompt-chip" data-prompt="Leia o arquivo pyproject.toml e explique a estrutura de dependências do projeto.">
-                            📄 Leia o arquivo pyproject.toml e explique o projeto
+                            Leia o arquivo pyproject.toml e explique o projeto
                         </button>
                         <button class="prompt-chip" data-prompt="Execute os testes automatizados com pytest e me mostre o status e possíveis erros.">
-                            🧪 Execute os testes automatizados com pytest
+                            Execute os testes automatizados com pytest
                         </button>
                         <button class="prompt-chip" data-prompt="Procure onde a função run_stream é definida usando a ferramenta de busca grep.">
-                            🔍 Procure pela definição de funções com grep
+                            Procure pela definição de funções com grep
                         </button>
                         <button class="prompt-chip" data-prompt="Crie um novo script Python em scratch/demo.py para testar cálculos matemáticos.">
-                            💻 Crie um novo script de teste no workspace
+                            Crie um novo script de teste no workspace
                         </button>
                     </div>
                 </div>
@@ -159,7 +168,7 @@
         <section id="view-diff" class="view-section">
             <div class="diff-header-bar">
                 <div class="diff-header-left">
-                    <h3>🔍 Inspecionar Alterações no Workspace</h3>
+                    <h3>Inspecionar Alterações no Workspace</h3>
                     <span class="diff-subtitle">Visualização Myers LCS com comparação linha a linha</span>
                 </div>
                 <div class="diff-controls">
@@ -170,7 +179,7 @@
 
             <div class="diff-input-grid">
                 <div class="diff-pane-left">
-                    <label class="diff-pane-label">📄 Versão Original</label>
+                    <label class="diff-pane-label">Versão Original</label>
                     <textarea id="diff-original-input" class="diff-textarea" placeholder="Cole o código original aqui..."></textarea>
                 </div>
                 <div class="diff-pane-right">
@@ -194,7 +203,7 @@
         <section id="view-tasks" class="view-section">
             <div class="tasks-header-bar">
                 <div class="tasks-header-left">
-                    <h3>📋 Painel de Tarefas & Atividade de Fundo</h3>
+                    <h3>Painel de Tarefas & Atividade de Fundo</h3>
                     <span class="tasks-subtitle">Gerencie o progresso das tarefas automatizadas pelo NeuroCore</span>
                 </div>
                 <div class="tasks-actions">

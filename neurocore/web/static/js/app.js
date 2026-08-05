@@ -371,16 +371,32 @@ class ChatClient {
 
         // Provider change triggers model dropdown options update
         if (selectProvider && selectModel) {
-            selectProvider.addEventListener('change', () => {
+            const defaultOptions = Array.from(selectModel.options).map(opt => ({value: opt.value, text: opt.text}));
+            
+            selectProvider.addEventListener('change', async () => {
                 const prov = selectProvider.value;
-                const modelMap = {
-                    'local': 'offline-simulated',
-                    'gemini': 'gemini-2.5-flash',
-                    'openai': 'gpt-4o',
-                    'anthropic': 'claude-3-5-sonnet',
-                    'openrouter': 'nvidia/nemotron-3-ultra-550b-a55b:free'
-                };
-                selectModel.value = modelMap[prov] || 'offline-simulated';
+                if (prov === 'openrouter') {
+                    selectModel.innerHTML = '<option value="">Carregando modelos...</option>';
+                    try {
+                        const res = await fetch('https://openrouter.ai/api/v1/models');
+                        const data = await res.json();
+                        if (data && data.data) {
+                            selectModel.innerHTML = data.data.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+                            selectModel.value = state.model || 'nvidia/nemotron-3-ultra-550b-a55b:free';
+                        }
+                    } catch (e) {
+                        selectModel.innerHTML = '<option value="nvidia/nemotron-3-ultra-550b-a55b:free">Nemotron 3 Ultra (Erro ao carregar lista)</option>';
+                    }
+                } else {
+                    selectModel.innerHTML = defaultOptions.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('');
+                    const modelMap = {
+                        'local': 'offline-simulated',
+                        'gemini': 'gemini-2.5-flash',
+                        'openai': 'gpt-4o',
+                        'anthropic': 'claude-3-5-sonnet'
+                    };
+                    selectModel.value = modelMap[prov] || 'offline-simulated';
+                }
             });
         }
     }
