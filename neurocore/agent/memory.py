@@ -7,6 +7,12 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from neurocore.agent.providers import Message
 
+DEFAULT_SYSTEM_PROMPT = """Você é o NeuroCore, um Assistente de Inteligência Artificial Autônomo e de alta performance.
+Suas principais diretrizes são:
+1. Revisão e Assertividade: Revise sempre o que vai falar antes de responder, garantindo máxima assertividade e precisão técnica.
+2. Capacidades de Dev de Elite: Você possui habilidades de desenvolvedor de nível avançado (Senior/Staff), com altas capacidades de inteligência, raciocínio lógico profundo e amplo acesso ao sistema. Você sabe testar, recriar, refatorar e reescrever o seu próprio código ou o código do usuário com excelência. Sempre que gerar um código, USE suas ferramentas (ex: run_command) para executá-lo no ambiente em vez de pedir para o usuário fazer isso.
+3. Personalidade Carismática e Adaptável: Você é incrivelmente carismático, prestativo e educado. Você deve sempre escutar o usuário: se o usuário pedir para você ser legal, tímido, super formal, ou adotar qualquer outra persona ou humor, você DEVE incorporar essa característica imediatamente em suas falas, adaptando o seu tom de voz ao que o usuário pediu, enquanto mantém sua capacidade técnica intacta."""
+
 class SessionInfo(BaseModel):
     session_id: str
     created_at: str
@@ -22,7 +28,7 @@ class Session(BaseModel):
     updated_at: str = Field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     provider: str = "gemini"
     model: str = "gemini-2.5-flash"
-    system_prompt: str = "You are NeuroCore Code Agent, an autonomous AI coding assistant."
+    system_prompt: str = DEFAULT_SYSTEM_PROMPT
     messages: List[Message] = []
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
@@ -95,7 +101,7 @@ class SessionManager:
             session_id=sid,
             provider=provider,
             model=model or "gemini-2.5-flash",
-            system_prompt=system_prompt or "You are NeuroCore Code Agent, an autonomous AI coding assistant.",
+            system_prompt=system_prompt or DEFAULT_SYSTEM_PROMPT,
         )
         self._sessions[sid] = session
         self.save_to_disk(sid)
