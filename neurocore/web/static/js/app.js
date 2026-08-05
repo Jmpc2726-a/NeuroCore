@@ -446,6 +446,15 @@ class ChatClient {
                 <div class="chat-message user">
                     <div class="message-bubble">${this.escapeHtml(promptText)}</div>
                 </div>
+                <div class="chat-message assistant" id="typing-indicator-msg">
+                    <div class="message-bubble" style="background: transparent; border: none; box-shadow: none;">
+                        <div class="typing-indicator">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
             `);
             this.container.scrollTop = this.container.scrollHeight;
         }
@@ -482,6 +491,9 @@ class ChatClient {
 
     renderAssistantResponse(data) {
         if (!this.container) return;
+        
+        const typingIndicator = document.getElementById('typing-indicator-msg');
+        if (typingIndicator) typingIndicator.remove();
 
         let rawText = data.response || data.content || data.message || 'Tarefa processada.';
         if (data.fallback_occurred && data.fallback_trace && data.fallback_trace.length > 0) {
