@@ -43,7 +43,7 @@
             <!-- Connection & Provider Button (Solves "não sei onde conecta") -->
             <button id="btn-open-connection" class="header-pill-btn">
                 <span class="dot-online"></span>
-                <span id="active-provider-label">Conexão: Local Offline</span>
+                <span id="active-provider-label"></span>
                 <span class="gear-icon">⛭</span>
             </button>
 
@@ -68,7 +68,7 @@
             </div>
             <div class="modal-body">
                 <p class="modal-desc">
-                    Escolha onde o NeuroCore processa suas requisições. O modo <strong>Local Offline</strong> é padrão, funciona instantaneamente e não requer nenhuma chave de API.
+                   <strong></strong>.
                 </p>
 
                 <div class="form-group">
@@ -122,7 +122,7 @@
                     <div class="welcome-icon">⚲</div>
                     <h2>Como posso ajudar no seu código hoje?</h2>
                     <p class="welcome-subtitle">
-                        NeuroCore Code Agent integrado diretamente ao seu repositório local.
+                        NeuroCore Code Agent.
                     </p>
 
                     <div class="prompt-suggestions">
@@ -152,14 +152,14 @@
                         placeholder="Converse com o NeuroCore ou peça para editar arquivos, rodar comandos..."
                         rows="1"></textarea>
                     <div class="input-bottom-actions">
-                        <span class="input-info">Pressione <strong>Enter</strong> para enviar • <strong>Shift+Enter</strong> para quebra de linha</span>
+                        <span class="input-info"><strong></strong><strong></strong> </span>
                         <button id="btn-send-prompt" class="btn-send-claude" title="Enviar Mensagem">
                             <span>↑</span>
                         </button>
                     </div>
                 </div>
                 <div class="input-footer">
-                    NeuroCore Code Agent • Execução segura em sandbox dentro de <code>/home/Andrade/neurocore-agent</code>
+                     <code></code>
                 </div>
             </div>
         </section>
@@ -183,13 +183,13 @@
                     <textarea id="diff-original-input" class="diff-textarea" placeholder="Cole o código original aqui..."></textarea>
                 </div>
                 <div class="diff-pane-right">
-                    <label class="diff-pane-label">✨ Nova Versão (Modificada pelo Agente)</label>
+                    <label class="diff-pane-label"> Nova Versão (Modificada pelo Agente)</label>
                     <textarea id="diff-modified-input" class="diff-textarea" placeholder="Cole a nova versão modificada aqui..."></textarea>
                 </div>
             </div>
 
             <div class="diff-action-bar">
-                <button id="btn-compute-diff" class="btn-compute-diff">⚡ Gerar Comparação Visual de Diffs</button>
+                <button id="btn-compute-diff" class="btn-compute-diff">Gerar Comparação Visual de Diffs</button>
             </div>
 
             <div id="diff-output-container" class="diff-output-container">
@@ -208,7 +208,7 @@
                 </div>
                 <div class="tasks-actions">
                     <button id="btn-new-task" class="btn-add-task">+ Criar Tarefa</button>
-                    <button id="btn-refresh-tasks" class="btn-refresh">🔄 Atualizar Painel</button>
+                    <button id="btn-refresh-tasks" class="btn-refresh">Atualizar Painel</button>
                 </div>
             </div>
 
@@ -216,7 +216,7 @@
             <div class="kanban-board">
                 <div class="kanban-column" data-status="backlog">
                     <div class="kanban-column-header">
-                        <span class="col-title">📥 Backlog</span>
+                        <span class="col-title">Backlog</span>
                         <span class="col-count" id="count-backlog">0</span>
                     </div>
                     <div class="kanban-list" id="list-backlog"></div>
@@ -224,7 +224,7 @@
 
                 <div class="kanban-column" data-status="in_progress">
                     <div class="kanban-column-header">
-                        <span class="col-title">🔄 Em Execução</span>
+                        <span class="col-title">Em Execução</span>
                         <span class="col-count" id="count-in_progress">0</span>
                     </div>
                     <div class="kanban-list" id="list-in_progress"></div>
@@ -232,7 +232,7 @@
 
                 <div class="kanban-column" data-status="completed">
                     <div class="kanban-column-header">
-                        <span class="col-title">✅ Concluído</span>
+                        <span class="col-title">Concluído</span>
                         <span class="col-count" id="count-completed">0</span>
                     </div>
                     <div class="kanban-list" id="list-completed"></div>
@@ -240,7 +240,7 @@
 
                 <div class="kanban-column" data-status="failed">
                     <div class="kanban-column-header">
-                        <span class="col-title">⚠️ Falhas</span>
+                        <span class="col-title">Falhas</span>
                         <span class="col-count" id="count-failed">0</span>
                     </div>
                     <div class="kanban-list" id="list-failed"></div>
@@ -274,7 +274,7 @@
         </div>
     </div>
 
-    <!-- Client JS Logic -->
+    
     <script src="/static/js/app.js"></script>
 </body>
 </html>
