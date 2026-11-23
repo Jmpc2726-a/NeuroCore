@@ -2,9 +2,7 @@
 
 O NeuroCore é uma aplicação web que funciona como assistente de código: permite conversar com uma IA sobre um projeto, comparar versões de código lado a lado e acompanhar tarefas automatizadas em um único painel.
 
-**Demonstração online:** https://neurocore-lpyp.onrender.com/
 
-> A demonstração está hospedada no plano gratuito do Render. Após um período sem acessos, o servidor entra em modo de espera e o primeiro carregamento pode levar cerca de 1 minuto.
 
 ---
 
