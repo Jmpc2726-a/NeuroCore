@@ -5,13 +5,14 @@ import asyncio
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Query, Response
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from neurocore.config import config
 from neurocore.agent.engine import AgentEngine
 from neurocore.agent.providers import ProviderManager
 from neurocore.agent.memory import SessionManager
 from neurocore.tools.executor import ToolExecutor
+from neurocore.tools.document_tools import get_document_path
 
 api_router = APIRouter()
 
@@ -117,6 +118,14 @@ async def get_tools_manifest():
     res["tools"] = tools_dict
     res["count"] = len(tools_dict)
     return res
+
+# Download de documentos gerados pela ferramenta create_document
+@api_router.get("/documents/{filename}")
+async def download_document(filename: str):
+    path = get_document_path(filename, workspace_root=config.WORKSPACE_ROOT)
+    if path is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return FileResponse(path, filename=path.name)
 
 @api_router.get("/sessions")
 async def list_sessions():
