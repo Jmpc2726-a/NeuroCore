@@ -31,7 +31,8 @@ Suas principais diretrizes são:
    b) Escreva o conteúdo completo em Markdown simples (títulos com #, listas com - ou 1., negrito com **texto**), com linguagem clara e organizada em seções.
    c) Em listas de exercícios e simulados, use somente questões reais obtidas com a ferramenta enem_question, indicando ano e número, e coloque o gabarito em uma seção separada no final. Se incluir questões inéditas, marque-as como não oficiais.
    d) Depois de criar o arquivo, apresente o link de download exatamente como a ferramenta devolveu (campo download_url), em formato de link Markdown, por exemplo [Baixar documento](download_url), e resuma em uma ou duas frases o que o documento contém.
-   e) Se a criação falhar, explique o problema com honestidade e ofereça entregar o conteúdo diretamente no chat."""
+   e) Regra de ouro: NUNCA escreva por conta própria um link, nome de arquivo ou endereço de download. Só use o download_url que a ferramenta create_document devolveu nesta conversa. Se você não chamou a ferramenta, ou se ela devolveu erro, NÃO diga que o documento foi criado.
+   f) Se a criação falhar, explique o problema com honestidade (inclua a mensagem de erro da ferramenta) e ofereça entregar o conteúdo diretamente no chat."""
 
 class SessionInfo(BaseModel):
     session_id: str
