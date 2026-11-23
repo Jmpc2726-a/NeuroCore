@@ -18,6 +18,7 @@ from neurocore.tools.file_tools import (
 )
 from neurocore.tools.shell_tools import RunCommandTool
 from neurocore.tools.enem_tools import EnemQuestionTool
+from neurocore.tools.document_tools import CreateDocumentTool
 
 
 class ToolRegistry:
@@ -54,6 +55,7 @@ def create_default_registry(workspace_root: Optional[Union[Path, str]] = None) -
     registry.register(ReplaceFileContentTool(workspace_root=ws))
     registry.register(RunCommandTool(workspace_root=ws))
     registry.register(EnemQuestionTool(workspace_root=ws))
+    registry.register(CreateDocumentTool(workspace_root=ws))
     return registry
 
 
