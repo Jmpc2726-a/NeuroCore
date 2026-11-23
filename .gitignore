@@ -11,3 +11,4 @@ env/
 .tasks/
 .tasks.json
 .agents/
+.cache_enem/
