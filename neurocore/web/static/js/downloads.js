@@ -5,6 +5,7 @@
  * (link Markdown, link HTML, endereço completo, caminho errado como /mnt/data/x.pdf
  * ou só o nome do arquivo) em um botão que baixa de /api/v1/documents/<arquivo>.
  * Funciona independente de como o app.js desenha as mensagens.
+ * Os estilos do cartão ficam em style.css (.nc-doc-card).
  */
 (function () {
   'use strict';
@@ -35,30 +36,6 @@
     '<polyline points="14 2 14 8 20 8"/>' +
     '<line x1="12" y1="11" x2="12" y2="17"/>' +
     '<polyline points="9 14 12 17 15 14"/></svg>';
-
-  var CSS =
-    '.nc-doc-card{display:flex;align-items:center;gap:.8rem;margin:.75rem 0;' +
-    'padding:.7rem 1rem;max-width:380px;background:var(--bg-surface,#fff);' +
-    'border:1px solid var(--border-color,#D1FAE5);border-radius:var(--radius-md,10px);' +
-    'color:var(--text-primary,#064E3B);text-decoration:none;cursor:pointer;' +
-    'box-shadow:var(--shadow-sm,none);transition:border-color .15s ease,transform .15s ease}' +
-    '.nc-doc-card:hover{border-color:var(--accent-terracotta,#10B981);transform:translateY(-1px)}' +
-    '.nc-doc-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;' +
-    'width:40px;height:40px;border-radius:var(--radius-sm,6px);' +
-    'background:var(--bg-surface-hover,#ECFDF5);color:var(--accent-terracotta,#10B981)}' +
-    '.nc-doc-info{display:flex;flex-direction:column;min-width:0}' +
-    '.nc-doc-name{font-weight:600;font-size:.88rem;overflow:hidden;' +
-    'text-overflow:ellipsis;white-space:nowrap}' +
-    '.nc-doc-action{font-size:.78rem;color:var(--text-secondary,#047857)}' +
-    '.nc-doc-card.nc-doc-error .nc-doc-action{color:var(--accent-rose,#EF4444)}';
-
-  function injectStyle() {
-    if (document.getElementById('nc-doc-style')) return;
-    var style = document.createElement('style');
-    style.id = 'nc-doc-style';
-    style.textContent = CSS;
-    document.head.appendChild(style);
-  }
 
   function makeCard(name) {
     var ext = name.split('.').pop().toLowerCase();
@@ -151,7 +128,8 @@
     }
 
     setStatus('Baixando...', false);
-    fetch(path)
+    var headers = (window.NeuroCore && window.NeuroCore.authHeaders) ? window.NeuroCore.authHeaders() : {};
+    fetch(path, { headers: headers })
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.blob();
@@ -204,7 +182,6 @@
   }
 
   function init() {
-    injectStyle();
     var container = document.getElementById(CONTAINER_ID);
     if (!container) return;
     observer = new MutationObserver(schedule);

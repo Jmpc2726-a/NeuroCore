@@ -469,7 +469,7 @@ class SlashCommandHandler:
             table.add_column("Description", style="white")
 
             table.add_row("/help", "-", "Display this command summary table.")
-            table.add_row("/provider", "[gemini|openai|anthropic|local]", "Switch or query active LLM provider.")
+            table.add_row("/provider", "[gemini|openai|anthropic|openrouter|local]", "Switch or query active LLM provider.")
             table.add_row("/status", "-", "Display session metrics, provider, model, & health.")
             table.add_row("/clear", "-", "Clear terminal screen buffer.")
             table.add_row("/reset", "-", "Reset conversation context history & token count.")
@@ -492,8 +492,8 @@ class SlashCommandHandler:
                 return {"action": "provider_info", "provider": current_provider, "handled": True}
 
             prov = argument.lower().strip()
-            if prov not in ["gemini", "openai", "anthropic", "local"]:
-                self.display.render_error("Invalid provider. Supported options: gemini, openai, anthropic, local")
+            if prov not in ["gemini", "openai", "anthropic", "openrouter", "local"]:
+                self.display.render_error("Invalid provider. Supported options: gemini, openai, anthropic, openrouter, local")
                 return {"action": "error", "handled": True}
 
             self.display.current_provider = prov

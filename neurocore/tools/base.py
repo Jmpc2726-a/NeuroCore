@@ -25,6 +25,26 @@ class ToolResult(BaseModel):
 ToolResult.model_rebuild()
 
 
+# Caminhos que nenhuma ferramenta pode ler ou alterar, mesmo dentro do
+# workspace: segredos (.env), histórico de conversas e metadados do git.
+PROTECTED_DIR_NAMES = {".git", ".sessions", ".tasks"}
+PROTECTED_FILE_PREFIXES = (".env",)
+PROTECTED_FILE_NAMES = {".tasks.json", ".netrc", ".pypirc", "id_rsa", "id_ed25519"}
+
+
+def is_protected_path(path: Path, workspace_root: Path) -> bool:
+    try:
+        rel = path.resolve().relative_to(workspace_root.resolve())
+    except ValueError:
+        return True
+    for part in rel.parts:
+        if part in PROTECTED_DIR_NAMES or part in PROTECTED_FILE_NAMES:
+            return True
+        if part.startswith(PROTECTED_FILE_PREFIXES) and part != ".env.example":
+            return True
+    return False
+
+
 class BaseTool(ABC):
     name: str = ""
     description: str = ""
@@ -58,7 +78,10 @@ class BaseTool(ABC):
         try:
             target.relative_to(ws)
         except ValueError:
-            raise ValueError(f"Access denied: path '{path_str}' is outside workspace root ({ws})")
+            raise ValueError(f"Access denied: path '{path_str}' is outside the workspace root")
+
+        if is_protected_path(target, ws):
+            raise ValueError(f"Access denied: path '{path_str}' is protected (secrets, sessions or git metadata)")
 
         return target
 

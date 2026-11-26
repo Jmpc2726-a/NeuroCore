@@ -9,14 +9,22 @@ ajustar os nomes dos campos em `format_question`.
 """
 
 import json
+import os
+import re
 import sys
 from pathlib import Path
 
 import requests
 
 BASE_URL = "https://api.enem.dev/v1"
-CACHE_DIR = Path(".cache_enem")
-CACHE_DIR.mkdir(exist_ok=True)
+
+
+def _cache_dir() -> Path:
+    """Pasta de cache dentro do workspace (criada só quando necessária)."""
+    root = os.environ.get("NEUROCORE_WORKSPACE") or os.environ.get("WORKSPACE_ROOT") or os.getcwd()
+    path = Path(root) / ".cache_enem"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def _get(path, params=None):
@@ -25,15 +33,22 @@ def _get(path, params=None):
     key = path.strip("/").replace("/", "_")
     if params:
         key += "_" + "_".join(f"{k}-{v}" for k, v in sorted(params.items()))
-    cache_file = CACHE_DIR / f"{key}.json"
+    key = re.sub(r"[^A-Za-z0-9_.-]", "_", key)[:150]
+    cache_file = _cache_dir() / f"{key}.json"
 
     if cache_file.exists():
-        return json.loads(cache_file.read_text(encoding="utf-8"))
+        try:
+            return json.loads(cache_file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pass  # cache corrompido: busca de novo
 
     resp = requests.get(f"{BASE_URL}{path}", params=params, timeout=15)
     resp.raise_for_status()
     data = resp.json()
-    cache_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    try:
+        cache_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    except OSError:
+        pass
     return data
 
 
@@ -44,12 +59,12 @@ def list_exams():
 
 def get_questions(year, limit=50, offset=0):
     """Lista questões de um ano, com paginação."""
-    return _get(f"/exams/{year}/questions", {"limit": limit, "offset": offset})
+    return _get(f"/exams/{int(year)}/questions", {"limit": int(limit), "offset": int(offset)})
 
 
 def get_question(year, index):
     """Busca uma questão específica pelo número."""
-    return _get(f"/exams/{year}/questions/{index}")
+    return _get(f"/exams/{int(year)}/questions/{int(index)}")
 
 
 def format_question(q):

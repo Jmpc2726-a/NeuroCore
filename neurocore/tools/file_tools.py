@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from neurocore.config import get_settings
-from neurocore.tools.base import BaseTool, ToolResult
+from neurocore.tools.base import BaseTool, ToolResult, is_protected_path
 
 
 BINARY_EXTENSIONS = {
@@ -146,7 +146,12 @@ class ListDirTool(BaseTool):
 
             items = []
             for child in target_path.iterdir():
-                stat = child.stat()
+                if is_protected_path(child, self.workspace_root):
+                    continue
+                try:
+                    stat = child.stat()
+                except OSError:
+                    continue
                 mod_time = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(stat.st_mtime))
                 items.append({
                     "name": child.name,
@@ -186,7 +191,9 @@ class GrepSearchTool(BaseTool):
         "required": ["pattern"],
     }
 
-    IGNORE_DIRS = {".git", ".venv", "venv", "__pycache__", ".sessions", ".agents", ".pytest_cache", ".egg-info"}
+    IGNORE_DIRS = {".git", ".venv", "venv", "node_modules", "__pycache__", ".sessions", ".tasks", ".agents", ".pytest_cache", ".egg-info", ".cache_enem"}
+    MAX_MATCHES = 500
+    MAX_FILES = 5000
 
     def _run_sync(self, tool_call_id: str = "", **kwargs: Any) -> ToolResult:
         pattern = kwargs.get("pattern", "")
@@ -222,8 +229,14 @@ class GrepSearchTool(BaseTool):
                     for file_name in files:
                         files_to_scan.append(Path(root) / file_name)
 
-            for file_path in files_to_scan:
+            for file_path in files_to_scan[: self.MAX_FILES]:
+                if len(matches) >= self.MAX_MATCHES:
+                    break
+                if is_protected_path(file_path, ws) or file_path.suffix.lower() in BINARY_EXTENSIONS:
+                    continue
                 try:
+                    if file_path.stat().st_size > get_settings().max_file_size_bytes:
+                        continue
                     rel_path = str(file_path.relative_to(ws))
                     with open(file_path, mode="r", encoding="utf-8", errors="ignore") as f:
                         line_idx = 1
@@ -232,7 +245,7 @@ class GrepSearchTool(BaseTool):
                                 matches.append({
                                     "file": rel_path,
                                     "line_number": line_idx,
-                                    "line_content": line.rstrip("\r\n"),
+                                    "line_content": line.rstrip("\r\n")[:400],
                                 })
                             line_idx += 1
                 except Exception:

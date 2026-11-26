@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from neurocore.server.app import app
+from neurocore.config import config
 
 client = TestClient(app)
 
@@ -25,7 +26,7 @@ def test_providers_endpoint():
     data = response.json()
     assert "local" in data
     assert data["local"]["available"] is True
-    assert data["default_provider"] == "gemini"
+    assert data["default_provider"] == config.DEFAULT_PROVIDER
     assert "available_providers" in data
 
 def test_tools_manifest_endpoint():

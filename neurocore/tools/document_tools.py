@@ -351,7 +351,7 @@ class CreateDocumentTool(BaseTool):
                 "filename": filename,
                 "format": fmt,
                 "size_bytes": path.stat().st_size,
-                "download_url": f"/api/documents/{filename}",
+                "download_url": f"/api/v1/documents/{filename}",
                 "message": (
                     "Documento criado com sucesso. Diga ao aluno que ele pode baixar "
                     "pelo link em download_url."
