@@ -191,7 +191,7 @@ class GrepSearchTool(BaseTool):
         "required": ["pattern"],
     }
 
-    IGNORE_DIRS = {".git", ".venv", "venv", "node_modules", "__pycache__", ".sessions", ".tasks", ".agents", ".pytest_cache", ".egg-info", ".cache_enem"}
+    IGNORE_DIRS = {".git", ".venv", "venv", "node_modules", "__pycache__", ".sessions", ".tasks", ".uploads", ".agents", ".pytest_cache", ".egg-info", ".cache_enem"}
     MAX_MATCHES = 500
     MAX_FILES = 5000
 

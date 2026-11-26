@@ -21,13 +21,18 @@ class ToolResult(BaseModel):
     output: Union[str, Dict[str, Any], List[Any]] = ""
     error: Optional[str] = None
     execution_time_ms: int = 0
+    # Imagens produzidas pela ferramenta (gráficos, imagens geradas, figuras
+    # do ENEM). Cada item é Attachment.to_public(); elas são mostradas ao
+    # usuário e enviadas ao modelo junto com o resultado.
+    attachments: List[Dict[str, Any]] = Field(default_factory=list)
 
 ToolResult.model_rebuild()
 
 
 # Caminhos que nenhuma ferramenta pode ler ou alterar, mesmo dentro do
-# workspace: segredos (.env), histórico de conversas e metadados do git.
-PROTECTED_DIR_NAMES = {".git", ".sessions", ".tasks"}
+# workspace: segredos (.env), histórico de conversas, anexos dos usuários e
+# metadados do git.
+PROTECTED_DIR_NAMES = {".git", ".sessions", ".tasks", ".uploads"}
 PROTECTED_FILE_PREFIXES = (".env",)
 PROTECTED_FILE_NAMES = {".tasks.json", ".netrc", ".pypirc", "id_rsa", "id_ed25519"}
 
@@ -49,6 +54,9 @@ class BaseTool(ABC):
     name: str = ""
     description: str = ""
     parameters_schema: Dict[str, Any] = Field(default_factory=dict)
+    # Ferramentas que precisam saber quem pediu (dono da conversa, provedor e
+    # chave) recebem o argumento interno "_context" do executor.
+    accepts_context: bool = False
 
     def __init__(self, workspace_root: Optional[Union[str, Path]] = None):
         if workspace_root is not None:

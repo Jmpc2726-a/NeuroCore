@@ -67,18 +67,55 @@ def get_question(year, index):
     return _get(f"/exams/{int(year)}/questions/{int(index)}")
 
 
-def format_question(q):
-    """Converte uma questão em texto legível (também serve de contexto para a IA)."""
+IMAGE_MD_RE = re.compile(r"!\[[^\]]*\]\(\s*(https?://[^)\s]+)\s*\)")
+MAX_QUESTION_IMAGES = 8
+
+
+def question_image_urls(q):
+    """URLs das figuras da questão (contexto, campo files e alternativas), sem repetir."""
+    urls = []
+    for url in q.get("files") or []:
+        if isinstance(url, str) and url.startswith(("http://", "https://")):
+            urls.append(url)
+    for field in ("context", "alternativesIntroduction"):
+        urls.extend(IMAGE_MD_RE.findall(q.get(field) or ""))
+    for alt in q.get("alternatives") or []:
+        file_url = alt.get("file") if isinstance(alt, dict) else None
+        if isinstance(file_url, str) and file_url.startswith(("http://", "https://")):
+            urls.append(file_url)
+    seen = []
+    for url in urls:
+        if url not in seen:
+            seen.append(url)
+    return seen[:MAX_QUESTION_IMAGES]
+
+
+def format_question(q, image_labels=None):
+    """Converte uma questão em texto legível (também serve de contexto para a IA).
+
+    image_labels: dicionário {url: "Figura 1"}; as imagens em Markdown viram
+    referências como [Figura 1], que batem com as imagens enviadas ao modelo.
+    """
+    labels = image_labels or {}
+
+    def replace_images(text):
+        return IMAGE_MD_RE.sub(lambda m: f"[{labels.get(m.group(1), 'imagem')}]", text or "")
+
     lines = [
         f"ENEM {q.get('year', '?')} - Questão {q.get('index', '?')} "
         f"({q.get('discipline', 'sem disciplina')})",
         "",
-        q.get("context") or "",
+        replace_images(q.get("context")),
         "",
-        q.get("alternativesIntroduction") or "",
+        replace_images(q.get("alternativesIntroduction")),
     ]
-    for alt in q.get("alternatives", []):
-        lines.append(f"{alt.get('letter', '?')}) {alt.get('text') or '[imagem]'}")
+    for alt in q.get("alternatives", []) or []:
+        text = replace_images(alt.get("text") or "")
+        file_url = alt.get("file")
+        if isinstance(file_url, str) and file_url:
+            figure = f"[{labels.get(file_url, 'imagem')}]"
+            text = f"{text} {figure}".strip()
+        lines.append(f"{alt.get('letter', '?')}) {text or '[imagem]'}")
     return "\n".join(line for line in lines if line is not None)
 
 

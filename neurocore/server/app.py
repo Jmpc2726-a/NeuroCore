@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -11,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from neurocore.config import config
 from neurocore.server.routes import api_router
 from neurocore.server.security import SecurityMiddleware
+from neurocore.tools.chart_tools import warm_up as warm_up_charts
 
 logger = logging.getLogger("neurocore.server")
 
@@ -22,6 +24,8 @@ INDEX_PATH = os.path.join(WEB_DIR, "templates", "index.html")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     config.ensure_directories()
+    # Carrega o matplotlib em segundo plano para o primeiro gráfico não demorar.
+    asyncio.get_running_loop().run_in_executor(None, warm_up_charts)
     if config.PUBLIC_MODE and not config.ACCESS_TOKEN:
         logger.warning(
             "NeuroCore em modo público sem NEUROCORE_ACCESS_TOKEN: qualquer visitante pode usar "
@@ -35,7 +39,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="NeuroCore Code Agent API",
         description="Autonomous AI Coding & Daily Productivity Assistant REST & SSE API",
-        version="1.1.0",
+        version="1.2.0",
         lifespan=lifespan,
         docs_url="/docs" if show_docs else None,
         redoc_url="/redoc" if show_docs else None,
@@ -48,7 +52,7 @@ def create_app() -> FastAPI:
             allow_origins=config.CORS_ORIGINS,
             allow_credentials=False,
             allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-            allow_headers=["Content-Type", "Authorization", "X-NeuroCore-Token"],
+            allow_headers=["Content-Type", "Authorization", "X-NeuroCore-Token", "X-Client-Id", "X-Filename"],
         )
     app.add_middleware(SecurityMiddleware)
 

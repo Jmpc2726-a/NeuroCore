@@ -16,3 +16,4 @@ generated_docs/
 *.egg-info/
 .env.*
 !.env.example
+.uploads/
