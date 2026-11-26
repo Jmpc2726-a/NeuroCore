@@ -72,7 +72,29 @@ class Config:
         # Tempo máximo de uma conexão SSE de atividade; o navegador reconecta sozinho.
         self.SSE_MAX_SECONDS: int = _env_int("NEUROCORE_SSE_MAX_SECONDS", 300)
 
-        self.MAX_CONTEXT_TOKENS: int = _env_int("NEUROCORE_MAX_CONTEXT_TOKENS", 32000)
+        # --- Anexos (imagens e documentos) ---------------------------------
+        self.UPLOADS_DIR: str = os.path.join(self.WORKSPACE_ROOT, ".uploads")
+        self.MAX_UPLOAD_BYTES: int = _env_int("NEUROCORE_MAX_UPLOAD_BYTES", 15 * 1024 * 1024)
+        self.MAX_UPLOAD_FILES: int = _env_int("NEUROCORE_MAX_UPLOAD_FILES", 3000)
+        self.UPLOAD_RATE_LIMIT_PER_MINUTE: int = _env_int("NEUROCORE_UPLOAD_RATE_LIMIT_PER_MINUTE", 60)
+        self.MAX_ATTACHMENTS_PER_MESSAGE: int = _env_int("NEUROCORE_MAX_ATTACHMENTS_PER_MESSAGE", 10)
+        # Quantas imagens (as mais recentes) são reenviadas ao modelo a cada chamada.
+        self.MAX_IMAGES_PER_REQUEST: int = _env_int("NEUROCORE_MAX_IMAGES_PER_REQUEST", 8)
+
+        # --- Geração de imagens --------------------------------------------
+        self.ENABLE_IMAGE_GENERATION: bool = _env_bool("NEUROCORE_ENABLE_IMAGE_GENERATION", True)
+        self.OPENAI_IMAGE_MODEL: str = os.environ.get("NEUROCORE_OPENAI_IMAGE_MODEL", "gpt-image-1")
+        self.GEMINI_IMAGE_MODEL: str = os.environ.get("NEUROCORE_GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+        self.OPENROUTER_IMAGE_MODEL: str = os.environ.get(
+            "NEUROCORE_OPENROUTER_IMAGE_MODEL", "google/gemini-2.5-flash-image"
+        )
+        # Servidores dos quais a ferramenta do ENEM pode baixar as figuras das questões.
+        self.ENEM_IMAGE_HOSTS: List[str] = _env_list("NEUROCORE_ENEM_IMAGE_HOSTS", ["enem.dev"])
+
+        # Fuso horário usado no prompt quando o navegador não informa o seu.
+        self.TIMEZONE: str = os.environ.get("NEUROCORE_TIMEZONE", "America/Sao_Paulo")
+
+        self.MAX_CONTEXT_TOKENS: int = _env_int("NEUROCORE_MAX_CONTEXT_TOKENS", 96000)
         self.MAX_STEPS: int = _env_int("NEUROCORE_MAX_STEPS", 15)
         self.SHELL_TIMEOUT: int = _env_int("NEUROCORE_SHELL_TIMEOUT", 30)
         self.LLM_TIMEOUT: int = _env_int("NEUROCORE_LLM_TIMEOUT", 300)
@@ -156,6 +178,7 @@ class Config:
     def ensure_directories(self):
         os.makedirs(self.SESSIONS_DIR, exist_ok=True)
         os.makedirs(self.TASKS_DIR, exist_ok=True)
+        os.makedirs(self.UPLOADS_DIR, exist_ok=True)
 
 
 Settings = Config

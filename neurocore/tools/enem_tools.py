@@ -12,10 +12,12 @@ import asyncio
 import random
 from typing import Any, Dict, List, Optional
 
+from neurocore.attachments import save_remote_image
 from neurocore.enem_client import (
     format_question,
     get_question,
     list_exams,
+    question_image_urls,
 )
 from neurocore.tools.base import BaseTool, ToolResult
 
@@ -45,6 +47,8 @@ class EnemQuestionTool(BaseTool):
         "Busca uma questão real de uma prova anterior do ENEM para o aluno estudar. "
         "Informe 'year' e 'index' para uma questão específica, ou deixe 'index' vazio "
         "para sortear uma questão (opcionalmente filtrando por 'year' e 'discipline'). "
+        "Se a questão tiver figuras (gráficos, tabelas, mapas, charges), elas são enviadas "
+        "junto com o resultado e aparecem para o aluno; o texto as cita como [Figura N]. "
         "O gabarito só é devolvido se reveal_answer for true; use isso apenas depois "
         "que o aluno responder ou pedir a correção."
     )
@@ -84,13 +88,37 @@ class EnemQuestionTool(BaseTool):
         **kwargs: Any,
     ) -> ToolResult:
         question = self._fetch(year, index, discipline)
+        q_year = question.get("year", year)
+        q_index = question.get("index", index)
+
+        # Figuras da questão: baixadas de servidores permitidos, mostradas ao
+        # aluno e enviadas ao modelo (que consegue analisá-las).
+        urls = question_image_urls(question)
+        labels: Dict[str, str] = {}
+        attachments: List[Dict[str, Any]] = []
+        failed = 0
+        for number, url in enumerate(urls, start=1):
+            label = f"Figura {number}"
+            labels[url] = label
+            try:
+                att = save_remote_image(url, source="enem", name=f"enem-{q_year}-q{q_index}-figura-{number}")
+                attachments.append(att.to_public())
+            except Exception:  # rede, formato inválido ou servidor não permitido
+                failed += 1
 
         output: Dict[str, Any] = {
-            "year": question.get("year", year),
-            "index": question.get("index", index),
+            "year": q_year,
+            "index": q_index,
             "discipline": question.get("discipline"),
-            "question_text": format_question(question),
+            "question_text": format_question(question, labels),
         }
+        if urls:
+            output["images_total"] = len(urls)
+            output["images_loaded"] = len(attachments)
+            note = "As figuras [Figura N] foram enviadas junto com este resultado e aparecem para o aluno."
+            if failed:
+                note += f" {failed} figura(s) não puderam ser carregadas; se forem essenciais, avise o aluno."
+            output["images_note"] = note
         if reveal_answer:
             output["correct_alternative"] = question.get("correctAlternative")
 
@@ -99,6 +127,7 @@ class EnemQuestionTool(BaseTool):
             name=self.name,
             status="success",
             output=output,
+            attachments=attachments,
         )
 
     async def _run_async_impl(self, tool_call_id: str = "", **kwargs: Any) -> ToolResult:

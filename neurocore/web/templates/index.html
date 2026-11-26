@@ -2,166 +2,259 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#0b0f0d">
-    <meta name="description" content="NeuroCore — assistente de código e de estudos para o ENEM com IA.">
-    <title>NeuroCore — Assistente de Código com IA</title>
+    <meta name="description" content="NeuroCore — assistente de IA para programação e estudos para o ENEM, com imagens, gráficos e documentos.">
+    <title>NeuroCore — Assistente de IA</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0f0d'/%3E%3Cpath d='M9 22V10l14 12V10' stroke='%2334d399' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/css/style.css?v=3">
+    <!-- KaTeX (fórmulas) e highlight.js (realce de código): versões fixas com hash de integridade (SRI). -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css" integrity="sha384-WwGtaC6ywCHxA5cstpj/3+xIZvTez8dq2IcBQaXRkenHZ7FVVq1ZROtURwfbtTlG" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/style.css?v=4">
 </head>
 <body>
-    <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+    <a class="skip-link" href="#chat-prompt-input">Pular para a caixa de mensagem</a>
 
-    <!-- CABEÇALHO -->
-    <header class="app-header">
-        <div class="header-left">
-            <div class="brand-logo">
-                <span class="brand-mark" aria-hidden="true">
-                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M9 22V10l14 12V10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-                <span class="brand-title">NeuroCore</span>
-                <span class="brand-badge">Workspace AI</span>
+    <div class="app-shell" id="app-shell">
+        <!-- BARRA LATERAL -->
+        <aside id="sidebar" class="sidebar" aria-label="Barra lateral">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <span class="brand-mark" aria-hidden="true">
+                        <svg width="20" height="20" viewBox="0 0 32 32" fill="none"><path d="M9 22V10l14 12V10" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <span class="brand-title">NeuroCore</span>
+                </div>
+                <button id="btn-collapse-sidebar" class="icon-btn" type="button" title="Recolher barra lateral" aria-label="Recolher barra lateral">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+                </button>
             </div>
-        </div>
 
-        <nav class="view-tabs" role="tablist" aria-label="Seções">
-            <button id="tab-btn-chat" class="tab-btn active" role="tab" aria-selected="true" aria-controls="view-chat" data-view="view-chat">Conversa</button>
-            <button id="tab-btn-diff" class="tab-btn" role="tab" aria-selected="false" aria-controls="view-diff" data-view="view-diff">Diffs</button>
-            <button id="tab-btn-tasks" class="tab-btn" role="tab" aria-selected="false" aria-controls="view-tasks" data-view="view-tasks">Tarefas</button>
-        </nav>
-
-        <div class="header-right">
-            <button id="btn-open-connection" class="header-pill-btn" type="button" title="Configurar provedor e chave de API">
-                <span id="status-dot" class="status-dot" aria-hidden="true"></span>
-                <span id="active-provider-label">Conexão</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <button id="btn-new-chat" class="sidebar-new-chat" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                <span>Nova conversa</span>
+                <kbd class="kbd-hint">Ctrl ⇧ O</kbd>
             </button>
 
-            <div class="workspace-pill" title="Workspace ativo no servidor">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-                <span id="workspace-name">—</span>
+            <nav class="sidebar-nav" role="tablist" aria-label="Seções">
+                <button id="tab-btn-chat" class="nav-item active" type="button" role="tab" aria-selected="true" aria-controls="view-chat" data-view="view-chat">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span>Conversa</span>
+                </button>
+                <button id="tab-btn-diff" class="nav-item" type="button" role="tab" aria-selected="false" aria-controls="view-diff" data-view="view-diff">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                    <span>Diffs</span>
+                </button>
+                <button id="tab-btn-tasks" class="nav-item" type="button" role="tab" aria-selected="false" aria-controls="view-tasks" data-view="view-tasks">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                    <span>Tarefas</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-search">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <label for="conversation-search" class="sr-only">Buscar conversas</label>
+                <input id="conversation-search" type="search" placeholder="Buscar conversas" autocomplete="off" maxlength="80">
             </div>
 
-            <button id="btn-new-chat" class="btn-primary btn-sm" type="button" title="Nova conversa" aria-label="Nova conversa">+<span class="btn-label"> Nova conversa</span></button>
-        </div>
-    </header>
+            <div id="conversation-list" class="conversation-list" aria-label="Conversas anteriores">
+                <div class="conversation-empty">Suas conversas aparecem aqui.</div>
+            </div>
 
-    <!-- CONTEÚDO PRINCIPAL -->
-    <main id="main-content" class="app-main">
+            <div class="sidebar-footer">
+                <button id="btn-open-settings" class="sidebar-footer-btn" type="button" title="Personalizar o NeuroCore">
+                    <span id="user-avatar" class="user-avatar" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                    </span>
+                    <span class="footer-text">
+                        <span id="user-display-name">Personalizar</span>
+                        <span id="workspace-name" class="footer-sub">workspace</span>
+                    </span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
+            </div>
+        </aside>
+        <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
 
-        <!-- CONVERSA -->
-        <section id="view-chat" class="view-section active" role="tabpanel" aria-labelledby="tab-btn-chat">
-            <div id="chat-messages-container" class="chat-messages-container" aria-live="polite">
-                <div id="welcome-card" class="welcome-card">
-                    <div class="welcome-icon" aria-hidden="true">
-                        <svg width="40" height="40" viewBox="0 0 32 32" fill="none"><path d="M9 22V10l14 12V10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </div>
-                    <h1>Como posso ajudar hoje?</h1>
-                    <p class="welcome-subtitle">Peça para ler e explicar arquivos, buscar código, rodar testes ou estudar questões do ENEM.</p>
-                    <div class="prompt-suggestions">
-                        <button class="prompt-chip" type="button" data-prompt="Leia o arquivo pyproject.toml e explique a estrutura de dependências do projeto.">Leia o arquivo pyproject.toml e explique o projeto</button>
-                        <button class="prompt-chip" type="button" data-prompt="Execute os testes automatizados com pytest e me mostre o status e possíveis erros.">Execute os testes automatizados com pytest</button>
-                        <button class="prompt-chip" type="button" data-prompt="Procure onde a função run_stream é definida usando a ferramenta de busca grep.">Procure a definição de uma função com grep</button>
-                        <button class="prompt-chip" type="button" data-prompt="Me traga uma questão de matemática do ENEM para eu resolver.">Me traga uma questão de matemática do ENEM</button>
-                    </div>
+        <!-- COLUNA PRINCIPAL -->
+        <div class="main-column">
+            <header class="app-header">
+                <div class="header-left">
+                    <button id="btn-toggle-sidebar" class="icon-btn" type="button" title="Abrir barra lateral" aria-label="Abrir barra lateral" aria-controls="sidebar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>
+                    </button>
+                    <button id="btn-open-connection" class="model-pill" type="button" title="Escolher provedor, modelo e chave de API">
+                        <span id="status-dot" class="status-dot" aria-hidden="true"></span>
+                        <span id="active-provider-label">Conexão</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
                 </div>
-            </div>
+                <div id="conversation-title" class="header-title" title=""></div>
+                <div class="header-right">
+                    <button id="btn-export-chat" class="icon-btn" type="button" title="Exportar conversa (Markdown)" aria-label="Exportar conversa">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+                    </button>
+                    <button id="btn-new-chat-header" class="icon-btn" type="button" title="Nova conversa" aria-label="Nova conversa">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </button>
+                </div>
+            </header>
 
-            <div class="chat-input-wrapper">
-                <form id="chat-form" class="chat-input-bar" autocomplete="off">
-                    <label for="chat-prompt-input" class="sr-only">Mensagem</label>
-                    <textarea id="chat-prompt-input" class="chat-textarea" rows="1" maxlength="20000"
-                        placeholder="Converse com o NeuroCore ou peça para ler arquivos, buscar código, rodar testes..."></textarea>
-                    <div class="input-bottom-actions">
-                        <span id="input-info" class="input-info">Enter envia · Shift+Enter quebra linha</span>
-                        <div class="input-buttons">
-                            <button id="btn-stop" class="btn-icon btn-stop hidden" type="button" title="Parar resposta" aria-label="Parar resposta">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
-                            </button>
-                            <button id="btn-send-prompt" class="btn-icon btn-send" type="submit" title="Enviar mensagem" aria-label="Enviar mensagem">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-                            </button>
+            <main id="main-content" class="app-main">
+                <!-- CONVERSA -->
+                <section id="view-chat" class="view-section active" role="tabpanel" aria-labelledby="tab-btn-chat">
+                    <div id="chat-scroll" class="chat-scroll">
+                        <div id="chat-messages-container" class="chat-messages-container" aria-live="polite">
+                            <div id="welcome-card" class="welcome-card">
+                                <div class="welcome-icon" aria-hidden="true">
+                                    <svg width="36" height="36" viewBox="0 0 32 32" fill="none"><path d="M9 22V10l14 12V10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <h1 id="welcome-title">Como posso ajudar hoje?</h1>
+                                <p class="welcome-subtitle">Programação, estudos para o ENEM, gráficos, imagens e documentos. Envie fotos de exercícios, prints e PDFs.</p>
+                                <div class="prompt-suggestions">
+                                    <button class="prompt-chip" type="button" data-prompt="Leia o arquivo pyproject.toml e explique a estrutura de dependências do projeto.">
+                                        <span class="chip-label">Código</span>
+                                        <span class="chip-text">Leia o pyproject.toml e explique o projeto</span>
+                                    </button>
+                                    <button class="prompt-chip" type="button" data-prompt="Plote f(x) = x² − 4x + 3 e me mostre as raízes e o vértice.">
+                                        <span class="chip-label">Gráfico</span>
+                                        <span class="chip-text">Plote f(x) = x² − 4x + 3 e mostre as raízes</span>
+                                    </button>
+                                    <button class="prompt-chip" type="button" data-prompt="Me traga uma questão de matemática do ENEM para eu resolver.">
+                                        <span class="chip-label">ENEM</span>
+                                        <span class="chip-text">Me traga uma questão de matemática do ENEM</span>
+                                    </button>
+                                    <button class="prompt-chip" type="button" data-prompt="Quanto é 18% de R$ 2.350,00?">
+                                        <span class="chip-label">Cálculo</span>
+                                        <span class="chip-text">Quanto é 18% de R$ 2.350,00?</span>
+                                    </button>
+                                    <button class="prompt-chip" type="button" data-action="attach">
+                                        <span class="chip-label">Foto</span>
+                                        <span class="chip-text">Envie a foto de um exercício e eu resolvo</span>
+                                    </button>
+                                    <button class="prompt-chip" type="button" data-fill="Corrija minha redação do ENEM pelas 5 competências e me dê uma nota estimada:&#10;&#10;">
+                                        <span class="chip-label">Redação</span>
+                                        <span class="chip-text">Corrija minha redação (texto ou foto)</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </form>
-                <p class="input-footer">O NeuroCore pode cometer erros. Revise o código e as respostas importantes.</p>
-            </div>
-        </section>
 
-        <!-- DIFFS -->
-        <section id="view-diff" class="view-section" role="tabpanel" aria-labelledby="tab-btn-diff" hidden>
-            <div class="section-header">
-                <div>
-                    <h2>Comparar versões de código</h2>
-                    <span class="section-subtitle">Diff linha a linha (LCS) em modo lado a lado ou unificado</span>
-                </div>
-                <div class="segmented" role="group" aria-label="Modo de visualização">
-                    <button id="btn-diff-split" class="segmented-btn active" type="button" aria-pressed="true">Lado a lado</button>
-                    <button id="btn-diff-unified" class="segmented-btn" type="button" aria-pressed="false">Unificado</button>
-                </div>
-            </div>
+                    <button id="btn-scroll-bottom" class="scroll-bottom" type="button" title="Ir para o fim" aria-label="Ir para o fim da conversa" hidden>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                    </button>
 
-            <div class="diff-scroll">
-                <div class="diff-input-grid">
-                    <div>
-                        <label class="field-label" for="diff-original-input">Versão original</label>
-                        <textarea id="diff-original-input" class="code-textarea" spellcheck="false" placeholder="Cole o código original aqui..."></textarea>
+                    <div class="chat-input-wrapper">
+                        <form id="chat-form" class="composer" autocomplete="off">
+                            <div id="attachment-tray" class="attachment-tray" hidden></div>
+                            <label for="chat-prompt-input" class="sr-only">Mensagem</label>
+                            <textarea id="chat-prompt-input" class="chat-textarea" rows="1" maxlength="20000"
+                                placeholder="Pergunte qualquer coisa, cole um print ou arraste arquivos..."></textarea>
+                            <div class="composer-actions">
+                                <div class="composer-left">
+                                    <button id="btn-attach" class="icon-btn" type="button" title="Anexar imagens ou arquivos (também dá para colar ou arrastar)" aria-label="Anexar arquivos">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                                    </button>
+                                    <button id="btn-voice" class="icon-btn" type="button" title="Ditar por voz" aria-label="Ditar por voz" aria-pressed="false" hidden>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/></svg>
+                                    </button>
+                                    <span id="input-info" class="input-info">Enter envia · Shift+Enter quebra linha</span>
+                                </div>
+                                <div class="composer-right">
+                                    <button id="btn-stop" class="btn-icon btn-stop" type="button" title="Parar resposta (Esc)" aria-label="Parar resposta" hidden>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+                                    </button>
+                                    <button id="btn-send-prompt" class="btn-icon btn-send" type="submit" title="Enviar mensagem" aria-label="Enviar mensagem">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <p class="input-footer">O NeuroCore pode cometer erros. Confira as informações importantes.</p>
                     </div>
-                    <div>
-                        <label class="field-label" for="diff-modified-input">Nova versão</label>
-                        <textarea id="diff-modified-input" class="code-textarea" spellcheck="false" placeholder="Cole a versão modificada aqui..."></textarea>
+                    <input id="file-input" type="file" multiple hidden
+                        accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,.pdf,.docx,.txt,.md,.csv,.json,.py,.js,.ts,.html,.css,.java,.c,.cpp,.cs,.go,.rs,.rb,.php,.sql,.yaml,.yml,.xml,.sh">
+                    <div id="drop-overlay" class="drop-overlay" hidden>
+                        <div class="drop-card">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
+                            <strong>Solte para anexar</strong>
+                            <span>Imagens, PDF, Word, textos e código</span>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="diff-action-bar">
-                    <button id="btn-compute-diff" class="btn-primary" type="button">Comparar</button>
-                    <button id="btn-clear-diff" class="btn-secondary" type="button">Limpar</button>
-                    <span id="diff-stats" class="diff-stats"></span>
-                </div>
+                <!-- DIFFS -->
+                <section id="view-diff" class="view-section" role="tabpanel" aria-labelledby="tab-btn-diff" hidden>
+                    <div class="section-header">
+                        <div>
+                            <h2>Comparar versões de código</h2>
+                            <span class="section-subtitle">Diff linha a linha (LCS) em modo lado a lado ou unificado</span>
+                        </div>
+                        <div class="segmented" role="group" aria-label="Modo de visualização">
+                            <button id="btn-diff-split" class="segmented-btn active" type="button" aria-pressed="true">Lado a lado</button>
+                            <button id="btn-diff-unified" class="segmented-btn" type="button" aria-pressed="false">Unificado</button>
+                        </div>
+                    </div>
+                    <div class="diff-scroll">
+                        <div class="diff-input-grid">
+                            <div>
+                                <label class="field-label" for="diff-original-input">Versão original</label>
+                                <textarea id="diff-original-input" class="code-textarea" spellcheck="false" placeholder="Cole o código original aqui..."></textarea>
+                            </div>
+                            <div>
+                                <label class="field-label" for="diff-modified-input">Nova versão</label>
+                                <textarea id="diff-modified-input" class="code-textarea" spellcheck="false" placeholder="Cole a versão modificada aqui..."></textarea>
+                            </div>
+                        </div>
+                        <div class="diff-action-bar">
+                            <button id="btn-compute-diff" class="btn-primary" type="button">Comparar</button>
+                            <button id="btn-clear-diff" class="btn-secondary" type="button">Limpar</button>
+                            <span id="diff-stats" class="diff-stats"></span>
+                        </div>
+                        <div id="diff-output-container" class="diff-output-container">
+                            <div class="empty-state">Cole as duas versões e clique em Comparar.</div>
+                        </div>
+                    </div>
+                </section>
 
-                <div id="diff-output-container" class="diff-output-container">
-                    <div class="empty-state">Cole as duas versões e clique em Comparar.</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAREFAS -->
-        <section id="view-tasks" class="view-section" role="tabpanel" aria-labelledby="tab-btn-tasks" hidden>
-            <div class="section-header">
-                <div>
-                    <h2>Tarefas do agente</h2>
-                    <span class="section-subtitle">Crie tarefas e execute-as com o provedor configurado. <span id="activity-status" class="activity-status">Atividade: desconectado</span></span>
-                </div>
-                <div class="section-actions">
-                    <button id="btn-new-task" class="btn-primary" type="button">+ Criar tarefa</button>
-                    <button id="btn-refresh-tasks" class="btn-secondary" type="button">Atualizar</button>
-                </div>
-            </div>
-
-            <div class="kanban-board">
-                <div class="kanban-column" data-status="backlog">
-                    <div class="kanban-column-header"><span class="col-title">Backlog</span><span class="col-count" id="count-backlog">0</span></div>
-                    <div class="kanban-list" id="list-backlog"></div>
-                </div>
-                <div class="kanban-column" data-status="in_progress">
-                    <div class="kanban-column-header"><span class="col-title">Em execução</span><span class="col-count" id="count-in_progress">0</span></div>
-                    <div class="kanban-list" id="list-in_progress"></div>
-                </div>
-                <div class="kanban-column" data-status="completed">
-                    <div class="kanban-column-header"><span class="col-title">Concluído</span><span class="col-count" id="count-completed">0</span></div>
-                    <div class="kanban-list" id="list-completed"></div>
-                </div>
-                <div class="kanban-column" data-status="failed">
-                    <div class="kanban-column-header"><span class="col-title">Falhas</span><span class="col-count" id="count-failed">0</span></div>
-                    <div class="kanban-list" id="list-failed"></div>
-                </div>
-            </div>
-        </section>
-    </main>
+                <!-- TAREFAS -->
+                <section id="view-tasks" class="view-section" role="tabpanel" aria-labelledby="tab-btn-tasks" hidden>
+                    <div class="section-header">
+                        <div>
+                            <h2>Tarefas do agente</h2>
+                            <span class="section-subtitle">Crie tarefas e execute-as com o provedor configurado. <span id="activity-status" class="activity-status">Atividade: desconectado</span></span>
+                        </div>
+                        <div class="section-actions">
+                            <button id="btn-new-task" class="btn-primary" type="button">+ Criar tarefa</button>
+                            <button id="btn-refresh-tasks" class="btn-secondary" type="button">Atualizar</button>
+                        </div>
+                    </div>
+                    <div class="kanban-board">
+                        <div class="kanban-column" data-status="backlog">
+                            <div class="kanban-column-header"><span class="col-title">Backlog</span><span class="col-count" id="count-backlog">0</span></div>
+                            <div class="kanban-list" id="list-backlog"></div>
+                        </div>
+                        <div class="kanban-column" data-status="in_progress">
+                            <div class="kanban-column-header"><span class="col-title">Em execução</span><span class="col-count" id="count-in_progress">0</span></div>
+                            <div class="kanban-list" id="list-in_progress"></div>
+                        </div>
+                        <div class="kanban-column" data-status="completed">
+                            <div class="kanban-column-header"><span class="col-title">Concluído</span><span class="col-count" id="count-completed">0</span></div>
+                            <div class="kanban-list" id="list-completed"></div>
+                        </div>
+                        <div class="kanban-column" data-status="failed">
+                            <div class="kanban-column-header"><span class="col-title">Falhas</span><span class="col-count" id="count-failed">0</span></div>
+                            <div class="kanban-list" id="list-failed"></div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
 
     <!-- MODAL: CONEXÃO -->
     <div id="connection-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="connection-modal-title">
@@ -173,9 +266,8 @@
             <form id="connection-form" class="modal-body" autocomplete="off">
                 <p class="modal-desc">
                     O modo <strong>Local</strong> funciona sem chave, mas é apenas uma simulação.
-                    Para respostas reais, escolha um provedor e informe sua chave de API.
+                    Para respostas reais, análise de imagens e geração de imagens, escolha um provedor e informe sua chave de API.
                 </p>
-
                 <div class="form-group">
                     <label class="field-label" for="modal-provider-select">Provedor</label>
                     <select id="modal-provider-select" class="field">
@@ -187,13 +279,11 @@
                     </select>
                     <span id="provider-server-hint" class="field-hint"></span>
                 </div>
-
                 <div class="form-group">
                     <label class="field-label" for="modal-model-select">Modelo</label>
                     <select id="modal-model-select" class="field"></select>
                     <input type="text" id="modal-model-custom" class="field hidden" maxlength="200" placeholder="Nome exato do modelo (ex.: gemini-2.5-pro)">
                 </div>
-
                 <div class="form-group" id="api-key-group">
                     <label class="field-label" for="modal-api-key-input">Chave de API</label>
                     <div class="input-with-action">
@@ -207,20 +297,62 @@
                     </label>
                     <span class="field-hint">
                         Sem marcar, a chave fica só nesta aba e some ao fechá-la. Ela é enviada apenas ao servidor
-                        do NeuroCore, que a usa para chamar o provedor e não a grava em disco.
-                        Use chaves com limite de gasto.
+                        do NeuroCore, que a usa para chamar o provedor e não a grava em disco. Use chaves com limite de gasto.
                     </span>
                 </div>
-
                 <div class="form-group hidden" id="access-token-group">
                     <label class="field-label" for="modal-access-token">Token de acesso do servidor</label>
                     <input type="password" id="modal-access-token" class="field" maxlength="400" spellcheck="false" placeholder="Token definido em NEUROCORE_ACCESS_TOKEN">
                     <span class="field-hint">Este servidor exige um token para usar a API.</span>
                 </div>
-
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" data-close-modal>Cancelar</button>
                     <button id="btn-save-connection" type="submit" class="btn-primary">Salvar conexão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PERSONALIZAÇÃO -->
+    <div id="settings-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+        <div class="modal-panel">
+            <div class="modal-header">
+                <h3 id="settings-modal-title">Personalizar o NeuroCore</h3>
+                <button class="btn-close-modal" type="button" data-close-modal aria-label="Fechar">✕</button>
+            </div>
+            <form id="settings-form" class="modal-body" autocomplete="off">
+                <div class="form-group">
+                    <label class="field-label" for="settings-name">Como o NeuroCore deve te chamar?</label>
+                    <input type="text" id="settings-name" class="field" maxlength="80" placeholder="Seu nome ou apelido">
+                </div>
+                <div class="form-group">
+                    <label class="field-label" for="settings-style">Estilo das respostas</label>
+                    <select id="settings-style" class="field">
+                        <option value="balanced">Equilibrado (padrão)</option>
+                        <option value="concise">Conciso e direto</option>
+                        <option value="detailed">Detalhado e aprofundado</option>
+                        <option value="didactic">Professor (passo a passo)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="field-label" for="settings-instructions">Instruções personalizadas</label>
+                    <textarea id="settings-instructions" class="field" rows="5" maxlength="4000"
+                        placeholder="Ex.: Estou no 3º ano do ensino médio e quero fazer Medicina. Explique com exemplos do dia a dia. Programo em Python."></textarea>
+                    <span class="field-hint"><span id="settings-instructions-count">0</span>/4000 · Enviadas com cada mensagem, para todas as conversas.</span>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-row">
+                        <input type="checkbox" id="settings-enter-sends" checked>
+                        <span>Enter envia a mensagem (Shift+Enter quebra linha)</span>
+                    </label>
+                </div>
+                <div class="form-group danger-zone">
+                    <span class="field-label">Dados</span>
+                    <button id="btn-delete-all" type="button" class="btn-danger">Apagar todas as minhas conversas</button>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" data-close-modal>Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar</button>
                 </div>
             </form>
         </div>
@@ -272,9 +404,39 @@
         </div>
     </div>
 
+    <!-- MODAL: CONFIRMAÇÃO -->
+    <div id="confirm-modal" class="modal-backdrop hidden" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+        <div class="modal-panel modal-small">
+            <div class="modal-body">
+                <h3 id="confirm-title" class="confirm-title">Confirmar</h3>
+                <p id="confirm-message" class="modal-desc"></p>
+                <div class="modal-actions">
+                    <button id="confirm-cancel" type="button" class="btn-secondary">Cancelar</button>
+                    <button id="confirm-ok" type="button" class="btn-danger-solid">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISUALIZADOR DE IMAGENS -->
+    <div id="lightbox" class="lightbox hidden" role="dialog" aria-modal="true" aria-label="Visualizar imagem">
+        <div class="lightbox-toolbar">
+            <span id="lightbox-name" class="lightbox-name"></span>
+            <a id="lightbox-download" class="icon-btn" href="#" download title="Baixar imagem" aria-label="Baixar imagem">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+            </a>
+            <button id="lightbox-close" class="icon-btn" type="button" aria-label="Fechar">✕</button>
+        </div>
+        <button id="lightbox-prev" class="lightbox-nav prev" type="button" aria-label="Imagem anterior">‹</button>
+        <img id="lightbox-image" class="lightbox-image" alt="">
+        <button id="lightbox-next" class="lightbox-nav next" type="button" aria-label="Próxima imagem">›</button>
+    </div>
+
     <div id="toast-container" class="toast-container" aria-live="assertive"></div>
 
-    <script src="/static/js/app.js?v=3"></script>
-    <script src="/static/js/downloads.js?v=3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js" integrity="sha384-a1WQdjRj162i159OYq041X6I4K8NenkrI09LlPmiHg0YOb7CR+wJOraXwK9abpnE" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/highlight.min.js" integrity="sha384-wjfDDhOPPdjtva8vWBhWeVprSpmxisEu5aYT3q1JyACqXpdKpo3PWZTMVq24MBix" crossorigin="anonymous" defer></script>
+    <script src="/static/js/app.js?v=4" defer></script>
+    <script src="/static/js/downloads.js?v=4" defer></script>
 </body>
 </html>

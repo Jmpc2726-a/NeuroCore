@@ -10,16 +10,20 @@ from typing import Any, Dict, List, Optional, Union
 
 from neurocore.config import get_settings
 from neurocore.tools.base import BaseTool, ToolResult
-from neurocore.tools.file_tools import (
-    ReadFileTool,
-    ListDirTool,
-    GrepSearchTool,
-    WriteFileTool,
-    ReplaceFileContentTool,
-)
-from neurocore.tools.shell_tools import RunCommandTool
-from neurocore.tools.enem_tools import EnemQuestionTool
+from neurocore.tools.calc_tools import CalculatorTool
+from neurocore.tools.chart_tools import CreateChartTool
+from neurocore.tools.context import ToolContext
 from neurocore.tools.document_tools import CreateDocumentTool
+from neurocore.tools.enem_tools import EnemQuestionTool
+from neurocore.tools.file_tools import (
+    GrepSearchTool,
+    ListDirTool,
+    ReadFileTool,
+    ReplaceFileContentTool,
+    WriteFileTool,
+)
+from neurocore.tools.image_tools import GenerateImageTool, resolve_image_backend
+from neurocore.tools.shell_tools import RunCommandTool
 
 
 class ToolRegistry:
@@ -55,8 +59,9 @@ def create_default_registry(
     workspace_root: Optional[Union[Path, str]] = None,
     allow_dangerous: Optional[bool] = None,
 ) -> ToolRegistry:
+    settings = get_settings()
     if allow_dangerous is None:
-        allow_dangerous = get_settings().ENABLE_DANGEROUS_TOOLS
+        allow_dangerous = settings.ENABLE_DANGEROUS_TOOLS
     registry = ToolRegistry()
     ws = Path(workspace_root).resolve() if workspace_root else None
     registry.register(ReadFileTool(workspace_root=ws))
@@ -68,6 +73,10 @@ def create_default_registry(
         registry.register(RunCommandTool(workspace_root=ws))
     registry.register(EnemQuestionTool(workspace_root=ws))
     registry.register(CreateDocumentTool(workspace_root=ws))
+    registry.register(CalculatorTool(workspace_root=ws))
+    registry.register(CreateChartTool(workspace_root=ws))
+    if settings.ENABLE_IMAGE_GENERATION:
+        registry.register(GenerateImageTool(workspace_root=ws))
     return registry
 
 
@@ -91,13 +100,24 @@ class ToolExecutor:
     def tools(self) -> Dict[str, BaseTool]:
         return self.registry._tools
 
-    def get_tool_definitions(self) -> List[Dict[str, Any]]:
-        return self.registry.get_tool_definitions()
+    def get_tool_definitions(self, context: Optional[ToolContext] = None) -> List[Dict[str, Any]]:
+        """Definições enviadas ao modelo. Com contexto, omite ferramentas que
+        não funcionariam nesta requisição (ex.: gerar imagem sem chave)."""
+        definitions = self.registry.get_tool_definitions()
+        if context is not None and resolve_image_backend(context) is None:
+            definitions = [d for d in definitions if d.get("name") != "generate_image"]
+        return definitions
 
     def get_tools_manifest(self) -> Dict[str, Any]:
         return self.registry.get_tools_manifest()
 
-    async def execute(self, tool_call_id: str, name: str, arguments: Dict[str, Any]) -> ToolResult:
+    async def execute(
+        self,
+        tool_call_id: str,
+        name: str,
+        arguments: Dict[str, Any],
+        context: Optional[ToolContext] = None,
+    ) -> ToolResult:
         start_time = time.time()
         tool = self.registry.get_tool(name)
 
@@ -113,6 +133,10 @@ class ToolExecutor:
 
         if not isinstance(arguments, dict):
             arguments = {}
+        # Parâmetros internos (começam com "_") nunca vêm do modelo.
+        arguments = {k: v for k, v in arguments.items() if isinstance(k, str) and not k.startswith("_")}
+        if getattr(tool, "accepts_context", False):
+            arguments["_context"] = context or ToolContext()
         try:
             if hasattr(tool, "execute"):
                 res = await tool.execute(tool_call_id=tool_call_id, **arguments)
