@@ -1,6 +1,8 @@
 from __future__ import annotations
 import json
 import os
+import re
+import tempfile
 import time
 import uuid
 from typing import List, Dict, Any, Optional
@@ -34,6 +36,14 @@ Suas principais diretrizes são:
    e) Regra de ouro: NUNCA escreva por conta própria um link, nome de arquivo ou endereço de download. Só use o download_url que a ferramenta create_document devolveu nesta conversa. Se você não chamou a ferramenta, ou se ela devolveu erro, NÃO diga que o documento foi criado.
    f) Se a criação falhar, explique o problema com honestidade (inclua a mensagem de erro da ferramenta) e ofereça entregar o conteúdo diretamente no chat."""
 
+SESSION_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+
+
+def is_valid_session_id(session_id: Optional[str]) -> bool:
+    """IDs viram nomes de arquivo: só aceitamos letras, números, '_' e '-'."""
+    return bool(session_id) and bool(SESSION_ID_RE.fullmatch(session_id))
+
+
 class SessionInfo(BaseModel):
     session_id: str
     created_at: str
@@ -47,10 +57,10 @@ class Session(BaseModel):
     session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     created_at: str = Field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     updated_at: str = Field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
-    provider: str = "gemini"
-    model: str = "gemini-2.5-flash"
+    provider: str = "local"
+    model: str = ""
     system_prompt: str = DEFAULT_SYSTEM_PROMPT
-    messages: List[Message] = []
+    messages: List[Message] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
@@ -101,37 +111,59 @@ def trim_messages(
 
 
 class SessionManager:
-    def __init__(self, storage_dir: Optional[str] = ".sessions", max_context_tokens: int = 32000):
-        self.storage_dir = storage_dir
+    def __init__(
+        self,
+        storage_dir: Optional[str] = ".sessions",
+        max_context_tokens: int = 32000,
+        max_sessions: int = 500,
+    ):
+        self.storage_dir = str(storage_dir) if storage_dir else None
         self.max_context_tokens = max_context_tokens
+        self.max_sessions = max_sessions
         self._sessions: Dict[str, Session] = {}
 
         if self.storage_dir:
             os.makedirs(self.storage_dir, exist_ok=True)
             self._load_all_from_disk()
 
+    def _filepath(self, session_id: str) -> Optional[str]:
+        if not self.storage_dir or not is_valid_session_id(session_id):
+            return None
+        return os.path.join(self.storage_dir, f"{session_id}.json")
+
+    def _evict_if_needed(self) -> None:
+        """Remove as sessões mais antigas quando o limite é ultrapassado."""
+        if self.max_sessions <= 0 or len(self._sessions) <= self.max_sessions:
+            return
+        ordered = sorted(self._sessions.values(), key=lambda s: s.updated_at)
+        for old in ordered[: len(self._sessions) - self.max_sessions]:
+            self.delete_session(old.session_id)
+
     def create_session(
         self,
         session_id: Optional[str] = None,
-        provider: str = "gemini",
+        provider: str = "local",
         model: Optional[str] = None,
         system_prompt: Optional[str] = None,
     ) -> Session:
+        if session_id is not None and not is_valid_session_id(session_id):
+            raise ValueError("session_id inválido: use apenas letras, números, '_' ou '-' (máx. 64).")
         sid = session_id or str(uuid.uuid4())
         session = Session(
             session_id=sid,
-            provider=provider,
-            model=model or "gemini-2.5-flash",
+            provider=provider or "local",
+            model=model or "",
             system_prompt=system_prompt or DEFAULT_SYSTEM_PROMPT,
         )
         self._sessions[sid] = session
         self.save_to_disk(sid)
+        self._evict_if_needed()
         return session
 
     def get_session(self, session_id: str) -> Optional[Session]:
         return self._sessions.get(session_id)
 
-    def get_or_create_session(self, session_id: Optional[str] = None, provider: str = "gemini") -> Session:
+    def get_or_create_session(self, session_id: Optional[str] = None, provider: str = "local") -> Session:
         if session_id and session_id in self._sessions:
             return self._sessions[session_id]
         return self.create_session(session_id=session_id, provider=provider)
@@ -158,10 +190,12 @@ class SessionManager:
     def delete_session(self, session_id: str) -> bool:
         if session_id in self._sessions:
             del self._sessions[session_id]
-            if self.storage_dir:
-                filepath = os.path.join(self.storage_dir, f"{session_id}.json")
-                if os.path.exists(filepath):
+            filepath = self._filepath(session_id)
+            if filepath and os.path.exists(filepath):
+                try:
                     os.remove(filepath)
+                except OSError:
+                    pass
             return True
         return False
 
@@ -183,24 +217,33 @@ class SessionManager:
         return sorted(infos, key=lambda x: x.updated_at, reverse=True)
 
     def save_to_disk(self, session_id: str):
-        if not self.storage_dir:
-            return
+        filepath = self._filepath(session_id)
         session = self.get_session(session_id)
-        if session:
-            filepath = os.path.join(self.storage_dir, f"{session_id}.json")
-            with open(filepath, "w", encoding="utf-8") as f:
+        if not filepath or not session:
+            return
+        # Escrita atômica: grava num arquivo temporário e renomeia.
+        try:
+            fd, tmp_path = tempfile.mkstemp(dir=self.storage_dir, suffix=".tmp")
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
                 f.write(session.model_dump_json(indent=2))
+            os.replace(tmp_path, filepath)
+        except OSError:
+            try:
+                os.remove(tmp_path)  # type: ignore[possibly-undefined]
+            except Exception:
+                pass
 
     def _load_all_from_disk(self):
         if not self.storage_dir or not os.path.exists(self.storage_dir):
             return
         for fname in os.listdir(self.storage_dir):
-            if fname.endswith(".json"):
-                fpath = os.path.join(self.storage_dir, fname)
-                try:
-                    with open(fpath, "r", encoding="utf-8") as f:
-                        data = json.load(f)
-                        session = Session(**data)
-                        self._sessions[session.session_id] = session
-                except Exception:
-                    pass
+            if not fname.endswith(".json") or not is_valid_session_id(fname[:-5]):
+                continue
+            fpath = os.path.join(self.storage_dir, fname)
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    session = Session(**json.load(f))
+                if is_valid_session_id(session.session_id):
+                    self._sessions[session.session_id] = session
+            except Exception:
+                continue

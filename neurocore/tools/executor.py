@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from neurocore.config import get_settings
 from neurocore.tools.base import BaseTool, ToolResult
 from neurocore.tools.file_tools import (
     ReadFileTool,
@@ -45,15 +46,26 @@ class ToolRegistry:
         return [tool.get_json_schema() for tool in self._tools.values()]
 
 
-def create_default_registry(workspace_root: Optional[Union[Path, str]] = None) -> ToolRegistry:
+# Ferramentas que alteram o servidor: só ficam disponíveis quando
+# NEUROCORE_ENABLE_DANGEROUS_TOOLS está ativo (padrão apenas fora do modo público).
+DANGEROUS_TOOL_NAMES = {"write_file", "replace_file_content", "run_command"}
+
+
+def create_default_registry(
+    workspace_root: Optional[Union[Path, str]] = None,
+    allow_dangerous: Optional[bool] = None,
+) -> ToolRegistry:
+    if allow_dangerous is None:
+        allow_dangerous = get_settings().ENABLE_DANGEROUS_TOOLS
     registry = ToolRegistry()
     ws = Path(workspace_root).resolve() if workspace_root else None
     registry.register(ReadFileTool(workspace_root=ws))
     registry.register(ListDirTool(workspace_root=ws))
     registry.register(GrepSearchTool(workspace_root=ws))
-    registry.register(WriteFileTool(workspace_root=ws))
-    registry.register(ReplaceFileContentTool(workspace_root=ws))
-    registry.register(RunCommandTool(workspace_root=ws))
+    if allow_dangerous:
+        registry.register(WriteFileTool(workspace_root=ws))
+        registry.register(ReplaceFileContentTool(workspace_root=ws))
+        registry.register(RunCommandTool(workspace_root=ws))
     registry.register(EnemQuestionTool(workspace_root=ws))
     registry.register(CreateDocumentTool(workspace_root=ws))
     return registry
@@ -99,6 +111,8 @@ class ToolExecutor:
                 execution_time_ms=int((time.time() - start_time) * 1000),
             )
 
+        if not isinstance(arguments, dict):
+            arguments = {}
         try:
             if hasattr(tool, "execute"):
                 res = await tool.execute(tool_call_id=tool_call_id, **arguments)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neurocore-agent"
-version = "0.1.0"
+version = "1.1.0"
 description = "Autonomous AI Coding & Daily Productivity Assistant"
 authors = [{ name = "NeuroCore Team" }]
 requires-python = ">=3.10"
@@ -17,6 +17,9 @@ dependencies = [
     "prompt-toolkit>=3.0.40",
     "aiofiles>=23.2.0",
     "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "reportlab>=4.0.0",
+    "python-docx>=1.1.0",
 ]
 
 [project.scripts]

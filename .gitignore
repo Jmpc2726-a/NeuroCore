@@ -12,3 +12,7 @@ env/
 .tasks.json
 .agents/
 .cache_enem/
+generated_docs/
+*.egg-info/
+.env.*
+!.env.example

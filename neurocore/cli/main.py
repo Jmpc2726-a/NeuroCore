@@ -69,7 +69,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--provider",
         type=str,
-        choices=["gemini", "openai", "anthropic", "local"],
+        choices=["gemini", "openai", "anthropic", "openrouter", "local"],
         default=None,
         help="Override active LLM provider (default: local)."
     )
@@ -141,7 +141,17 @@ async def execute_agent_turn(
     # 1. Try importing in-process AgentEngine
     try:
         from neurocore.agent.engine import AgentEngine
-        engine = AgentEngine()
+        from neurocore.agent.memory import SessionManager
+        from neurocore.tools.executor import ToolExecutor
+
+        # Usa o workspace escolhido (-w/--workspace) para as ferramentas e para
+        # guardar as sessões, em vez do diretório atual do processo.
+        ws_root = os.path.abspath(workspace) if workspace else None
+        sessions_root = os.path.join(ws_root, ".sessions") if ws_root else ".sessions"
+        engine = AgentEngine(
+            session_manager=SessionManager(storage_dir=sessions_root),
+            tool_executor=ToolExecutor(workspace_root=ws_root),
+        )
         if hasattr(engine, "run"):
             res = await engine.run(
                 user_prompt=prompt,
